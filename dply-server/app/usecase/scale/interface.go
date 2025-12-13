@@ -1,0 +1,14 @@
+package scale_usecase
+
+import (
+	"errors"
+
+	"github.com/dionisius77/dply/dply-server/entity"
+)
+
+var ErrUnexpected = errors.New("Unexpected internal error")
+
+type UseCase interface {
+	Get(project, env, name string) (*entity.Scale, error)
+	Upsert(data entity.Scale) error
+}

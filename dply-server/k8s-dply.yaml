@@ -1,0 +1,224 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dply
+  labels:
+    name: dply
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dply-server
+  namespace: dply
+  labels:
+    app: dply-server
+    type: utility
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dply-server-cluster-admin
+  labels:
+    app: dply-server
+    type: utility
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: dply-server
+  namespace: dply
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dply-mysql-pods
+  namespace: dply
+  labels:
+    app: dply-mysql
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+  clusterIP: None
+  selector:
+    app: dply-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dply-mysql
+  namespace: dply
+  labels:
+    app: dply-mysql
+spec:
+  ports:
+  - name: mysql
+    port: 3306
+  selector:
+    app: dply-mysql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: dply-mysql
+  namespace: dply
+  labels:
+    app: dply-mysql
+spec:
+  selector:
+    matchLabels:
+      app: dply-mysql
+  serviceName: "dply-mysql"
+  podManagementPolicy: Parallel
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dply-mysql
+    spec:
+      containers:
+      - image: mysql:8
+        name: dply-mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: mysql@dply
+        - name: MYSQL_DATABASE
+          value: dply
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: dply-mysql-pv-volume
+          mountPath: /var/lib/mysql
+        livenessProbe:
+          exec:
+            command: ["mysqladmin", "ping"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command: ["mysql", "-h", "localhost", "-pmysql@dply", "-e", "SELECT 1"]
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+  volumeClaimTemplates:
+  - metadata:
+      name: dply-mysql-pv-volume
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dply-server
+  namespace: dply
+  labels:
+    app: dply-server
+    app.kubernetes.io/name: dply-server
+    app.kubernetes.io/managed-by: manual
+    app.kubernetes.io/created-by: dionisius77
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: dply-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: dply-server
+        stack: go
+    spec:
+      initContainers:
+      - name: init-mydb
+        image: mysql:8
+        command: ['sh', '-c', "until mysql -h dply-mysql.dply.svc.cluster.local -pmysql@dply -e \"SELECT 1\"; do echo waiting for mydb; sleep 2; done"]
+      containers:
+      - name: dply-server
+        image: dionisius77/dply-server@sha256:f10e728be66c20d3c88a64ac4f0f2e3083d17c732784911f3bf7cb9085d0d66c
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ENVIRONMENT
+          value: production
+        - name: MAINTENANCE
+          value: "false"
+        - name: REST_PORT
+          value: "80"
+        - name: GRPC_PORT
+          value: "9090"
+        - name: DB_HOST
+          value: dply-mysql.dply.svc.cluster.local
+        - name: DB_USERNAME
+          value: root
+        - name: DB_PASSWORD
+          value: mysql@dply
+        - name: DB_LOG_ENABLE
+          value: "true"
+        - name: DB_LOG_LEVEL
+          value: "3"
+        - name: DB_LOG_THRESHOLD
+          value: "100"
+        - name: PASSWORD_SALT
+          value: "bMWLKgSqIUhJVdnE"
+        - name: K8S_IN_CLUSTER
+          value: "true"
+        - name: K8S_KUBE_CONFIG
+          value: ~/.kube/config
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        - containerPort: 9090
+          protocol: TCP
+        - containerPort: 9800
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100M
+          requests:
+            cpu: 100m
+            memory: 100M
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      serviceAccount: dply-server
+      serviceAccountName: dply-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dply-server
+  namespace: dply
+  labels:
+    app: dply-server
+    app.kubernetes.io/name: dply-server
+    app.kubernetes.io/managed-by: manual
+    app.kubernetes.io/created-by: dionisius77
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: grpc
+    port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    app: dply-server
