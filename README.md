@@ -1,2 +1,111 @@
 # dply
-k8s service deployment management
+Custom k8s service deployment management
+
+## k8s strategy
+| Namespace  | Pods                          |
+|------------|-------------------------------|
+| production | auth-service, checker-service |
+| staging    | auth-service, checker-service |
+
+
+## How to create new environment
+```
+  kubectl create namespace <environment>
+```
+
+## How to connect with dplyon tools
+1. Connect local machine with kube (means install kubectl etc.)
+2. Insall dplyon-client on local machine (run at dply folder)
+- ```go build -o dplyon```
+- ```mkdir -p ~/bin```
+- ```mv dplyon ~/bin/```
+- ```echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc```
+- ```source ~/.zshrc```
+check dplyon already installed
+```dplyon```
+3. dplyon config set-dply-server <dply-server-ip>:<port>
+4. dplyon login -e <email> -p <password>
+
+## How to deploy new service
+1. Add docker image
+```dplyon image add -n <service-name> -i <repo@sha256:digest> -d "<desc>"```
+Verify image already registered
+```dplyon image list -n <service-name>```
+2. Prepare environment variable
+```dplyon spec envar-edit -e <environment> -n <service-name>```
+Example
+```
+{
+  "DBDATABASENAME": "core",
+  "DBHOST": "127.0.0.1",
+  "DBLOGENABLE": true,
+  "DBLOGLEVEL": 3,
+  "DBLOGTHRESHOLD": 1,
+  "DBPASSWORD": "dbpassword",
+  "DBPORT": 54330,
+  "DBSCHEMA": "public",
+  "DBTIMEZONE": "Asia/Jakarta",
+  "DBUSERNAME": "postgres",
+  "ENV": "dev",
+  "ENVIRONMENT": "dev",
+  "GRPCPORT": 29000,
+  "JAEGERURL": "127.0.0.1:4318",
+  "JWTAUDIENCE": "localhost",
+  "JWTISSUER": "localhost",
+  "JWTSECRET": "jwtsecret",
+  "MAINTENANCE": false,
+  "RABBITMQURL": "amqp://guest:guest@127.0.0.1:5672/",
+  "RESTPORT": 28100,
+  "SERVICENAME": "servicename",
+  "TOKENDURATION": 1440
+}
+```
+3. Prepare port configuration
+```dplyon spec port-edit -e <environment> -n <service-name>```
+example
+```
+{
+  "access_type": "ClusterIP",
+  "external_ip": "",
+  "ports": [
+      {
+          "name": "rest",
+          "port": 28100,
+          "remote_port": 28100,
+          "protocol": "TCP"
+      },
+      {
+          "name": "grpc",
+          "port": 29000,
+          "remote_port": 29000,
+          "protocol": "TCP"
+      }
+  ]
+}
+```
+4. Set scaling strategy
+```dplyon spec scaling-edit -e <environment> -n <service-name>```
+example
+```
+{
+  "min_replica": 1,
+  "max_replica": 2,
+  "min_cpu": 64,
+  "max_cpu": 256,
+  "min_memory": 256,
+  "max_memory": 512,
+  "target_cpu": 70
+}
+```
+5. Deploy selected docker image
+```dplyon deploy image <digest> -e <environment> -n <service-name>```
+6. Verify app started
+```kubectl get pod -n <environment> -l app=<service-name>```
+
+## How to update service or rollback
+1. Upload new image to specific environment
+```dplyon image add -n <service-name> -i <repo@sha256:digest> -d "<desc>"```
+2. Get image list
+```dplyon image list -n <service-name>```
+3. Deploy selected docker image
+```dplyon deploy image <digest> -e <environment> -n <service-name>```

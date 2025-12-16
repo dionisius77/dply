@@ -1,7 +1,7 @@
 # docker build -t dply-server .
 # docker tag dply-server dionisius77/dply-server && docker push dionisius77/dply-server
 # docker run -d  -p 30080:80 -p 39090:9090 --name dply-server dply-server
-FROM golang:1.16-buster as builder
+FROM golang:1.16-bullseye as builder
 
 ARG GITHUB_TOKEN
 
@@ -33,7 +33,7 @@ WORKDIR /app/handler/cli/set-user-to-inactive
 RUN GOOS=linux go build -o /bin/set-user-to-inactive
 
 
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
         ca-certificates \

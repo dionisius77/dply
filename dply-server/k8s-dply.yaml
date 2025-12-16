@@ -83,7 +83,7 @@ spec:
         name: dply-mysql
         env:
         - name: MYSQL_ROOT_PASSWORD
-          value: mysql@dply
+          value: mysql@dplytcl
         - name: MYSQL_DATABASE
           value: dply
         ports:
@@ -100,7 +100,7 @@ spec:
           timeoutSeconds: 5
         readinessProbe:
           exec:
-            command: ["mysql", "-h", "localhost", "-pmysql@dply", "-e", "SELECT 1"]
+            command: ["mysql", "-h", "localhost", "-pmysql@dplytcl", "-e", "SELECT 1"]
           initialDelaySeconds: 5
           periodSeconds: 2
           timeoutSeconds: 1
@@ -141,13 +141,15 @@ spec:
         app: dply-server
         stack: go
     spec:
+      imagePullSecrets:
+        - name: dply-dockerhub-cred
       initContainers:
       - name: init-mydb
         image: mysql:8
-        command: ['sh', '-c', "until mysql -h dply-mysql.dply.svc.cluster.local -pmysql@dply -e \"SELECT 1\"; do echo waiting for mydb; sleep 2; done"]
+        command: ['sh', '-c', "until mysql -h dply-mysql.dply.svc.cluster.local -pmysql@dplytcl -e \"SELECT 1\"; do echo waiting for mydb; sleep 2; done"]
       containers:
       - name: dply-server
-        image: dionisius77/dply-server@sha256:f10e728be66c20d3c88a64ac4f0f2e3083d17c732784911f3bf7cb9085d0d66c
+        image: docker.io/dionisius77/dpyl-server:v1.0
         imagePullPolicy: IfNotPresent
         env:
         - name: ENVIRONMENT
@@ -163,7 +165,7 @@ spec:
         - name: DB_USERNAME
           value: root
         - name: DB_PASSWORD
-          value: mysql@dply
+          value: mysql@dplytcl
         - name: DB_LOG_ENABLE
           value: "true"
         - name: DB_LOG_LEVEL
