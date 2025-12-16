@@ -2,13 +2,10 @@ package image_repository
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	repository_intf "github.com/dionisius77/dply/dply/app/repository"
@@ -30,36 +27,36 @@ type repository struct {
 }
 
 func New(cli pbImage.ImageApiClient, cfg *entity.Config) (repository_intf.ImageRepository, error) {
-	certFile := cfg.DockerCertificatesPath + "/cert.pem"
-	keyFile := cfg.DockerCertificatesPath + "/key.pem"
-	caFile := cfg.DockerCertificatesPath + "/ca.pem"
+	// certFile := cfg.DockerCertificatesPath + "/cert.pem"
+	// keyFile := cfg.DockerCertificatesPath + "/key.pem"
+	// caFile := cfg.DockerCertificatesPath + "/ca.pem"
 
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return nil, err
-	}
+	// cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// Load CA cert
-	caCert, err := ioutil.ReadFile(caFile)
-	if err != nil {
-		return nil, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
+	// // Load CA cert
+	// caCert, err := ioutil.ReadFile(caFile)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// caCertPool := x509.NewCertPool()
+	// caCertPool.AppendCertsFromPEM(caCert)
 
-	customTransport := &(*http.DefaultTransport.(*http.Transport)) // make shallow copy
-	customTransport.TLSClientConfig = &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-	}
+	// customTransport := &(*http.DefaultTransport.(*http.Transport)) // make shallow copy
+	// customTransport.TLSClientConfig = &tls.Config{
+	// 	Certificates: []tls.Certificate{cert},
+	// 	RootCAs:      caCertPool,
+	// }
 
-	dockerClient, err := client.NewClient(cfg.DockerHost, cfg.DockerVersion, &http.Client{Transport: customTransport}, map[string]string{})
-	if err != nil {
-		return nil, err
-	}
+	// dockerClient, err := client.NewClient(cfg.DockerHost, cfg.DockerVersion, &http.Client{Transport: customTransport}, map[string]string{})
+	// if err != nil {
+	// 	return nil, nil
+	// }
 	return &repository{
 		cli:        cli,
-		docker_cli: dockerClient,
+		docker_cli: nil,
 		registry_host: cfg.
 			RegistryHost, registry_username: cfg.
 			RegistryUsername,
