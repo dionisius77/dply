@@ -1,7 +1,9 @@
 package cli_image
 
 import (
+	"crypto/tls"
 	"log"
+	"net"
 
 	"github.com/dionisius77/dply/dply/app/repository"
 	image_usecase "github.com/dionisius77/dply/dply/app/usecase/image"
@@ -9,6 +11,7 @@ import (
 	"github.com/dionisius77/dply/dply/entity"
 	"github.com/dionisius77/dply/dply/repository/image_repository"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/credentials"
 )
 
 type CmdImage struct {
@@ -29,7 +32,11 @@ func New() *CmdImage {
 	var imageCli pbImage.ImageApiClient = nil
 	if cfg != nil {
 		var err error
-		imageCli, err = pbImage.NewImageApiGrstClient(cfg.DplyServerHost, nil)
+		host, _, _ := net.SplitHostPort(cfg.DplyServerHost)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: host,
+		})
+		imageCli, err = pbImage.NewImageApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server", err)
 		}

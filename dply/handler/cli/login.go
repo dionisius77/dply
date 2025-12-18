@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"crypto/tls"
 	"errors"
 	"log"
+	"net"
 
 	"github.com/badoux/checkmail"
 	"github.com/dionisius77/dply/dply/app/repository"
@@ -11,6 +13,7 @@ import (
 	"github.com/dionisius77/dply/dply/entity"
 	"github.com/dionisius77/dply/dply/repository/user_repository"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/spf13/cobra"
 )
@@ -30,7 +33,11 @@ func NewCmdLogin() *CmdLogin {
 	var userCli pbUser.UserApiClient = nil
 	if cfg != nil {
 		var err error
-		userCli, err = pbUser.NewUserApiGrstClient(cfg.DplyServerHost, nil)
+		host, _, _ := net.SplitHostPort(cfg.DplyServerHost)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: host,
+		})
+		userCli, err = pbUser.NewUserApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server:", err)
 		}

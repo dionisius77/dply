@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dply-server-grpc
+  labels:
+    app: dply-server
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/service.serversscheme: h2c
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - dply.tcl-it.tech
+    secretName: dply-server-tls
+  rules:
+  - host: dply.tcl-it.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dply-server
+            port:
+              name: grpc
+
+# Notes:
+# - This Ingress uses Traefik as ingressClass and TLS on `websecure` entrypoint.
+# - Traefik will forward HTTP/2 (gRPC) to the backend; ensure your clients use HTTP/2/TLS.

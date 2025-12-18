@@ -1,9 +1,11 @@
 package cli
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
+	"net"
 
 	"github.com/dionisius77/dply/dply/app/repository"
 	auth_usecase "github.com/dionisius77/dply/dply/app/usecase/auth"
@@ -14,6 +16,7 @@ import (
 	"github.com/dionisius77/dply/dply/repository/server_repository"
 	"github.com/dionisius77/dply/dply/repository/user_repository"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/credentials"
 )
 
 type CmdStatus struct {
@@ -34,12 +37,16 @@ func NewCmdStatus() *CmdStatus {
 
 	if cfg != nil {
 		var err error
-		userCli, err = pbUser.NewUserApiGrstClient(cfg.DplyServerHost, nil)
+		host, _, _ := net.SplitHostPort(cfg.DplyServerHost)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: host,
+		})
+		userCli, err = pbUser.NewUserApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server:", err)
 		}
 
-		serverCli, err = pbServer.NewServerApiGrstClient(cfg.DplyServerHost, nil)
+		serverCli, err = pbServer.NewServerApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server", err)
 		}

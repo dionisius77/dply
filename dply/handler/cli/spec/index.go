@@ -1,7 +1,9 @@
 package cli_spec
 
 import (
+	"crypto/tls"
 	"log"
+	"net"
 
 	"github.com/dionisius77/dply/dply/app/repository"
 	affinity_usecase "github.com/dionisius77/dply/dply/app/usecase/affinity"
@@ -12,6 +14,7 @@ import (
 	"github.com/dionisius77/dply/dply/entity"
 	"github.com/dionisius77/dply/dply/repository/spec_repository"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/credentials"
 )
 
 type CmdSpec struct {
@@ -30,7 +33,11 @@ func New() *CmdSpec {
 
 	if cfg != nil {
 		var err error
-		specCli, err = pbSpec.NewSpecApiGrstClient(cfg.DplyServerHost, nil)
+		host, _, _ := net.SplitHostPort(cfg.DplyServerHost)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: host,
+		})
+		specCli, err = pbSpec.NewSpecApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server", err)
 		}

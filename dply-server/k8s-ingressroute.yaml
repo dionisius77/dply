@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: dply-server-grpc
+  namespace: dply
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`dply.tcl-it.tech`)
+      kind: Rule
+      services:
+        - name: dply-server
+          port: 9090
+          scheme: h2c
+  tls:
+    secretName: dply-server-tls

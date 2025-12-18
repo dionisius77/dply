@@ -1,7 +1,9 @@
 package cli_envar
 
 import (
+	"crypto/tls"
 	"log"
+	"net"
 
 	"github.com/dionisius77/dply/dply/app/repository"
 	deploy_usecase "github.com/dionisius77/dply/dply/app/usecase/deploy"
@@ -9,6 +11,7 @@ import (
 	"github.com/dionisius77/dply/dply/entity"
 	"github.com/dionisius77/dply/dply/repository/deploy_repository"
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc/credentials"
 )
 
 type CmdDeploy struct {
@@ -22,7 +25,11 @@ func New() *CmdDeploy {
 	var deployCli pbDeploy.DeployApiClient = nil
 	if cfg != nil {
 		var err error
-		deployCli, err = pbDeploy.NewDeployApiGrstClient(cfg.DplyServerHost, nil)
+		host, _, _ := net.SplitHostPort(cfg.DplyServerHost)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: host,
+		})
+		deployCli, err = pbDeploy.NewDeployApiGrstClient(cfg.DplyServerHost, &creds)
 		if err != nil {
 			log.Panicln("Failed to initialized cli for dply-server", err)
 		}
