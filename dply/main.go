@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// for bump version
+// for bump version lagi
 func main() {
 
 	rootCmd := &cobra.Command{Use: "dplyon", Short: "dplyon", Long: "dplyon"}
