@@ -1,0 +1,28 @@
+syntax = "proto3";
+package user;
+
+import "google/protobuf/empty.proto";
+
+service UserApi {
+  rpc Login(LoginReq) returns (User);
+  rpc GetCurrentLogin(google.protobuf.Empty) returns (User);
+  rpc UpdatePassword(UpdatePasswordReq) returns (google.protobuf.Empty);
+}
+
+message LoginReq {
+  string Email = 1;
+  string Password = 2;
+}
+
+message UpdatePasswordReq {
+  string Email = 1;
+  string OldPassword = 2;
+  string NewPassword = 3;
+}
+
+message User {
+  string Name = 1;
+  string Usertype = 2;
+  string Email = 3;
+  string Token = 4;
+}

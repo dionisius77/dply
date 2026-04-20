@@ -1,0 +1,4 @@
+window.__RUNTIME_CONFIG__ = {
+  REACT_APP_GRPC_WEB_HOST: "",
+  REACT_APP_REST_HOST: ""
+};

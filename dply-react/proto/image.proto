@@ -1,0 +1,40 @@
+syntax = "proto3";
+package image;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service ImageApi {
+  rpc Get(GetReq) returns (Images);
+  rpc Add(AddReq) returns (google.protobuf.Empty);
+}
+
+message Image {
+  int32 Id = 1;
+  string Digest = 2;
+  string Image = 4;
+  string Project = 9;
+  string Repository = 5;
+  string Description = 6;
+  int32 CreatedBy = 7;
+  google.protobuf.Timestamp CreatedAt = 8;
+  string Notes = 10;
+}
+
+message Images {
+  repeated Image Images = 1;
+}
+
+message GetReq {
+  string Project = 4;
+  string Repository = 1;
+  int32 Size = 2;
+  int32 Page = 3;
+}
+
+message AddReq {
+  string Project = 4;
+  string Image = 1;
+  string Repository = 2;
+  string Description = 3;
+}

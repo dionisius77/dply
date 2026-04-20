@@ -1,0 +1,22 @@
+syntax = "proto3";
+package deploy;
+
+import "google/protobuf/empty.proto";
+
+service DeployApi {
+  rpc DeployImage(DeployImageReq) returns (google.protobuf.Empty);
+  rpc Redeploy(RedeployReq) returns (google.protobuf.Empty);
+}
+
+message DeployImageReq {
+  string Project = 4;
+  string Env = 1;
+  string Name = 2;
+  string Digest = 3;
+}
+
+message RedeployReq {
+  string Project = 3;
+  string Env = 1;
+  string Name = 2;
+}

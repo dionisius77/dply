@@ -1,0 +1,12 @@
+syntax = "proto3";
+package server;
+
+import "google/protobuf/empty.proto";
+
+service ServerApi {
+  rpc Status(google.protobuf.Empty) returns (StatusResp);
+}
+
+message StatusResp {
+  string Status = 1;
+}

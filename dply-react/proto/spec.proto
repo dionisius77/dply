@@ -1,0 +1,122 @@
+syntax = "proto3";
+package spec;
+
+import "google/protobuf/empty.proto";
+
+service SpecApi {
+  rpc GetEnvar(GetEnvarReq) returns (Envar);
+  rpc UpsertEnvar(UpsertEnvarReq) returns (google.protobuf.Empty);
+  rpc GetScale(GetScaleReq) returns (Scale);
+  rpc UpsertScale(UpsertScaleReq) returns (google.protobuf.Empty);
+  rpc GetPort(GetPortReq) returns (Ports);
+  rpc UpsertPort(UpsertPortReq) returns (google.protobuf.Empty);
+  rpc GetAffinity(GetAffinityReq) returns (Affinity);
+  rpc UpsertAffinity(UpsertAffinityReq) returns (google.protobuf.Empty);
+}
+
+message GetEnvarReq {
+  string Project = 3;
+  string Env = 1;
+  string Name = 2;
+}
+
+message UpsertEnvarReq {
+  string Project = 4;
+  string Env = 1;
+  string Name = 2;
+  string Variables = 3;
+}
+
+message Envar {
+  string Variables = 1;
+}
+
+message GetScaleReq {
+  string Project = 3;
+  string Env = 1;
+  string Name = 2;
+}
+
+message UpsertScaleReq {
+  string Project = 10;
+  string Env = 1;
+  string Name = 2;
+  int32 MinReplica = 3;
+  int32 MaxReplica = 4;
+  int32 MinCpu = 5;
+  int32 MaxCpu = 6;
+  int32 MinMemory = 7;
+  int32 MaxMemory = 8;
+  int32 TargetCPUUtilization = 9;
+}
+
+message Scale {
+  string Project = 1;
+  string Env = 2;
+  string Name = 3;
+  int32 MinReplica = 4;
+  int32 MaxReplica = 5;
+  int32 MinCpu = 6;
+  int32 MaxCpu = 7;
+  int32 MinMemory = 8;
+  int32 MaxMemory = 9;
+  int32 TargetCPUUtilization = 10;
+}
+
+message GetPortReq {
+  string Project = 3;
+  string Env = 1;
+  string Name = 2;
+}
+
+message UpsertPortReq {
+  string Project = 6;
+  string Env = 1;
+  string Name = 2;
+  string AccessType = 3;
+  string ExternalIP = 4;
+  repeated Port Ports = 5;
+}
+
+message Ports {
+  repeated Port Ports = 1;
+  string AccessType = 2;
+  string ExternalIP = 3;
+}
+
+message Port {
+  string PortName = 1;
+  int32 Port = 2;
+  int32 RemotePort = 3;
+  string Protocol = 4;
+}
+
+message GetAffinityReq {
+  string Project = 3;
+  string Env = 1;
+  string Name = 2;
+}
+
+message UpsertAffinityReq {
+  string Project = 6;
+  string Env = 1;
+  string Name = 2;
+  repeated AffinityTerm NodeAffinity = 3;
+  repeated AffinityTerm PodAffinity = 4;
+  repeated AffinityTerm PodAntiAffinity = 5;
+}
+
+message Affinity {
+  repeated AffinityTerm NodeAffinity = 3;
+  repeated AffinityTerm PodAffinity = 4;
+  repeated AffinityTerm PodAntiAffinity = 5;
+}
+
+message AffinityTerm {
+  string Mode = 1;
+  string Key = 2;
+  string Operator = 3;
+  repeated string Values = 4;
+  int32 Weight = 5;
+  string TopologyKey = 6;
+}

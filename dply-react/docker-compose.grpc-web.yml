@@ -1,0 +1,24 @@
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.31.2
+    container_name: dply-envoy
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    networks:
+      - dply-net
+
+  dply-react:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dply-react
+    environment:
+      - REACT_APP_GRPC_WEB_HOST=http://envoy:4000
+    depends_on:
+      - envoy
+    networks:
+      - dply-net
+
+networks:
+  dply-net:
+    external: true
