@@ -1,12 +1,10 @@
-import { FormEvent, useState } from "react";
+import { FormEvent } from "react";
 import Button from "components/button";
 import ContentContainer from "components/container";
-import Input, { Textarea } from "components/input";
+import JsonEditor from "components/json-editor";
+import Input from "components/input";
 import Select from "components/select";
 import Typography from "components/typography";
-import { getSpecBundle, upsertAffinity, upsertEnvar, upsertPorts, upsertScale } from "../../grpc/services";
-import { useAppSelector } from "../../store";
-import { ScaleSpec } from "../../types";
 import useSpec from "./hooks/useSpec";
 import ImagesSection from "./sections/images.section";
 
@@ -96,7 +94,7 @@ const SpecPage = () => {
         <ContentContainer>
           <div className="space-y-3">
             <Typography variant="heading6" weight="bold">Environment Variables</Typography>
-            <Textarea value={variables} onChange={(e) => setVariables(e.target.value)} rows={12} />
+            <JsonEditor value={variables} onChange={(val) => setVariables(val)} />
             <Button onClick={saveEnvar}>Save Envar</Button>
           </div>
         </ContentContainer>
@@ -134,20 +132,20 @@ const SpecPage = () => {
               />
               <Input label="External IP" value={externalIP} onChange={(e) => setExternalIP(e.target.value)} />
             </div>
-            <Textarea label="Ports JSON" value={portsJson} onChange={(e) => setPortsJson(e.target.value)} rows={10} />
+            <JsonEditor label="Ports JSON" value={portsJson} onChange={(val) => setPortsJson(val)} />
             <Button onClick={savePorts}>Save Ports</Button>
           </div>
         </ContentContainer>
 
-        <ContentContainer>
+        {/* <ContentContainer>
           <div className="space-y-3">
             <Typography variant="heading6" weight="bold">Affinity</Typography>
-            <Textarea label="Node Affinity" value={nodeAffinityJson} onChange={(e) => setNodeAffinityJson(e.target.value)} rows={4} />
-            <Textarea label="Pod Affinity" value={podAffinityJson} onChange={(e) => setPodAffinityJson(e.target.value)} rows={4} />
-            <Textarea label="Pod Anti Affinity" value={podAntiAffinityJson} onChange={(e) => setPodAntiAffinityJson(e.target.value)} rows={4} />
+            <JsonEditor label="Node Affinity" value={nodeAffinityJson} onChange={(value) => setNodeAffinityJson(value)} />
+            <JsonEditor label="Pod Affinity" value={podAffinityJson} onChange={(value) => setPodAffinityJson(value)} />
+            <JsonEditor label="Pod Anti Affinity" value={podAntiAffinityJson} onChange={(value) => setPodAntiAffinityJson(value)} />
             <Button onClick={saveAffinity}>Save Affinity</Button>
           </div>
-        </ContentContainer>
+        </ContentContainer> */}
       </div>
 
       {name &&

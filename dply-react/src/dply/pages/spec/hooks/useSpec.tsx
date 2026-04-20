@@ -2,6 +2,7 @@ import { getSpecBundle, upsertEnvar, upsertScale, upsertPorts, upsertAffinity } 
 import { useAppSelector } from "dply/store";
 import { ScaleSpec } from "dply/types";
 import { useState, FormEvent } from "react";
+import { isValidJSON } from "_helper/valid-json";
 
 const defaultScale = (project: string, env: string, name: string): ScaleSpec => ({
   project,
@@ -72,6 +73,10 @@ const useSpec = () => {
     setError("");
     setMessage("");
     if (!ensureScope()) return;
+
+    if (!isValidJSON(variables)) {
+      setMessage("Environment variables is not a valid json.");
+    }
 
     try {
       JSON.parse(variables);
