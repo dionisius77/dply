@@ -5,7 +5,7 @@ services:
     volumes:
       - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
     networks:
-      - dply-net
+      - vpn-net
 
   dply-react:
     build:
@@ -17,8 +17,8 @@ services:
     depends_on:
       - envoy
     networks:
-      - dply-net
+      - vpn-net
 
 networks:
-  dply-net:
+  vpn-net:
     external: true
